@@ -32,7 +32,7 @@ services:
     environment:
       - DB_HOST=db
       - DB_PORT=5432
-    command: >
+    command: |
       bash -c "
       echo 'Waiting for database to be ready...'
       python -c '
