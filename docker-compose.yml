@@ -1,0 +1,74 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: ecommerce_postgres_db
+    restart: always
+    environment:
+      POSTGRES_DB: superlabs_ecommerce_db
+      POSTGRES_USER: superlabs_ecommerce_user
+      POSTGRES_PASSWORD: coKTXdeGR8l883NU1TwqsUH7FyfZIbmg
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U superlabs_ecommerce_user -d superlabs_ecommerce_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ecommerce_backend
+    restart: always
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+    command: >
+      bash -c "
+      echo 'Waiting for database to be ready...'
+      python -c '
+      import socket, time
+      s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+      while True:
+          try:
+              s.connect((\"db\", 5432))
+              break
+          except socket.error:
+              time.sleep(1)
+      '
+      echo 'Database is up - running migrations...'
+      python manage.py migrate
+      echo 'Starting development server...'
+      python manage.py runserver 0.0.0.0:8000
+      "
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ecommerce_frontend
+    restart: always
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
