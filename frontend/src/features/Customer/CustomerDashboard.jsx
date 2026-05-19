@@ -185,7 +185,7 @@ const CustomerDashboard = () => {
 
   useEffect(() => {
     fetchAllCounts();
-  }, [products]); // reload counts when catalog mutates
+  }, []); // Only fetch counts once on mount to avoid duplicate API calls during navigation/filtering
 
   // 2. Fetch Paginated and Filtered Products on URL search params change
   useEffect(() => {
@@ -320,6 +320,7 @@ const CustomerDashboard = () => {
 
   const handleRatingSaved = (productId, newRating) => {
     setProducts(prev => prev.map(p => p.id === productId ? { ...p, rating: newRating } : p));
+    setAllProductsForCounts(prev => prev.map(p => p.id === productId ? { ...p, rating: newRating } : p));
   };
 
   const totalPages = Math.ceil(totalCount / pageSize);
