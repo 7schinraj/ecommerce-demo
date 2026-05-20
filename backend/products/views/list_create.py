@@ -12,10 +12,6 @@ from products.schemas import PRODUCT_LIST_SCHEMA, PRODUCT_CREATE_SCHEMA
 
 
 class ProductPagination(PageNumberPagination):
-    """
-    Standard page-based paginator for Products listings.
-    Supports dynamic page sizes: 10, 20, 50, 100.
-    """
     page_size = 10
     page_size_query_param = 'page_size'
     max_page_size = 100

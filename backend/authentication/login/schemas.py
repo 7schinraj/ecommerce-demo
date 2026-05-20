@@ -3,6 +3,7 @@ from authentication.login.serializers import LoginSerializer
 
 
 LOGIN_SWAGGER_SCHEMA = {
+    "tags": ["Authentication"],
     "operation_description": "Authenticates user credentials. Returns JWT tokens upon successful login.",
     "request_body": LoginSerializer,
     "responses": {

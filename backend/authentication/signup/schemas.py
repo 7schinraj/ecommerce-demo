@@ -3,6 +3,7 @@ from authentication.signup.serializers import SignupSerializer
 
 
 SIGNUP_SWAGGER_SCHEMA = {
+    "tags": ["Authentication"],
     "operation_description": "Registers a new user account with unique username and email. Returns JWT tokens upon success.",
     "request_body": SignupSerializer,
     "responses": {

@@ -3,6 +3,7 @@ from products.serializers import ProductSerializer
 
 
 PRODUCT_LIST_SCHEMA = {
+    "tags": ["Products"],
     "operation_description": "Retrieves a paginated list of products. Supports comprehensive full-text searches, price filters, availability status, minimum ratings, and sorted results.",
     "manual_parameters": [
         openapi.Parameter('q', openapi.IN_QUERY, description="Case-insensitive search query matching name or description (e.g. iphone)", type=openapi.TYPE_STRING),
@@ -51,6 +52,7 @@ PRODUCT_LIST_SCHEMA = {
 
 
 PRODUCT_CREATE_SCHEMA = {
+    "tags": ["Products"],
     "operation_description": "Registers a new e-commerce product. Enforces unique SKU validations and automatic slugification.",
     "request_body": ProductSerializer,
     "responses": {
@@ -98,6 +100,7 @@ PRODUCT_CREATE_SCHEMA = {
 
 
 PRODUCT_DETAIL_SCHEMA = {
+    "tags": ["Products"],
     "operation_description": "Retrieves comprehensive information of a specific product by its database primary ID.",
     "responses": {
         200: openapi.Response(
@@ -142,6 +145,7 @@ PRODUCT_DETAIL_SCHEMA = {
 
 
 PRODUCT_UPDATE_SCHEMA = {
+    "tags": ["Products"],
     "operation_description": "Updates details of an existing product. Support complete/partial replacements.",
     "request_body": ProductSerializer,
     "responses": {
@@ -189,6 +193,7 @@ PRODUCT_UPDATE_SCHEMA = {
 
 
 PRODUCT_DELETE_SCHEMA = {
+    "tags": ["Products"],
     "operation_description": "Removes a product completely from the database by its primary ID.",
     "responses": {
         200: openapi.Response(
@@ -220,6 +225,7 @@ PRODUCT_DELETE_SCHEMA = {
 
 
 CATEGORY_LIST_SCHEMA = {
+    "tags": ["Products"],
     "operation_description": "Retrieves the list of all e-commerce product categories sorted alphabetically.",
     "responses": {
         200: openapi.Response(
@@ -245,6 +251,7 @@ CATEGORY_LIST_SCHEMA = {
 
 
 CATEGORY_CREATE_SCHEMA = {
+    "tags": ["Products"],
     "operation_description": "Creates a new category. Enforces name uniqueness (case-insensitive) and auto-slugifies.",
     "request_body": openapi.Schema(
         type=openapi.TYPE_OBJECT,
@@ -290,6 +297,7 @@ CATEGORY_CREATE_SCHEMA = {
 
 
 CATEGORY_DETAIL_SCHEMA = {
+    "tags": ["Products"],
     "operation_description": "Retrieves information of a specific category by its UUID primary key.",
     "responses": {
         200: openapi.Response(
@@ -326,6 +334,7 @@ CATEGORY_DETAIL_SCHEMA = {
 
 
 CATEGORY_UPDATE_SCHEMA = {
+    "tags": ["Products"],
     "operation_description": "Updates details of an existing category by its UUID primary key.",
     "request_body": openapi.Schema(
         type=openapi.TYPE_OBJECT,
@@ -356,6 +365,7 @@ CATEGORY_UPDATE_SCHEMA = {
 
 
 CATEGORY_DELETE_SCHEMA = {
+    "tags": ["Products"],
     "operation_description": "Removes a category by UUID primary key from the database.",
     "responses": {
         200: openapi.Response(
