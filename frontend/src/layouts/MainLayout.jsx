@@ -80,7 +80,7 @@ const MainLayout = () => {
           <span className="navbar-brand-text" style={{ color: 'var(--text-primary)' }}>GearCart</span>
         </Link>
 
-        {user && (
+        {user ? (
           <div className="navbar-user-container" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <div
               className="navbar-user-badge"
@@ -126,11 +126,28 @@ const MainLayout = () => {
               <span className="navbar-signout-text">Sign Out</span>
             </Button>
           </div>
+        ) : (
+          <div className="navbar-user-container" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Button
+              variant="outline"
+              onClick={() => navigate('/login')}
+              style={{ padding: '8px 14.5px', fontSize: '0.85rem' }}
+            >
+              Sign In
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => navigate('/signup')}
+              style={{ padding: '8px 14.5px', fontSize: '0.85rem' }}
+            >
+              Sign Up
+            </Button>
+          </div>
         )}
       </header>
 
       {/* Main Content Area */}
-      <main style={{ flex: 1, padding: 'var(--spacing-xl) var(--spacing-lg)', maxWidth: '1200px', width: '100%', margin: '0 auto' }}>
+      <main className="main-viewport-container">
         <Outlet />
       </main>
     </div>

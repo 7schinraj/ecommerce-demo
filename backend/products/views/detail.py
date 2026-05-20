@@ -34,6 +34,9 @@ class ProductDetailView(APIView):
 
     @swagger_auto_schema(**PRODUCT_UPDATE_SCHEMA)
     def put(self, request, pk):
+        if not (request.user and request.user.is_authenticated and request.user.role == 'admin'):
+            return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
+
         try:
             # 1. Fetch existing product
             product = ProductService.get_product(pk)
@@ -61,6 +64,17 @@ class ProductDetailView(APIView):
 
     @swagger_auto_schema(**PRODUCT_UPDATE_SCHEMA)
     def patch(self, request, pk):
+        if not (request.user and request.user.is_authenticated):
+            return Response({"detail": "Authentication credentials were not provided."}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if request.user.role != 'admin':
+            if request.user.role == 'customer':
+                allowed_keys = {'rating'}
+                if not set(request.data.keys()).issubset(allowed_keys):
+                    return Response({"detail": "Customers are only allowed to submit product ratings."}, status=status.HTTP_403_FORBIDDEN)
+            else:
+                return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
+
         try:
             # 1. Fetch existing product
             product = ProductService.get_product(pk)
@@ -88,6 +102,9 @@ class ProductDetailView(APIView):
 
     @swagger_auto_schema(**PRODUCT_DELETE_SCHEMA)
     def delete(self, request, pk):
+        if not (request.user and request.user.is_authenticated and request.user.role == 'admin'):
+            return Response({"detail": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
+
         try:
             # 1. Delegate deletion execution to service layer
             ProductService.delete_product(pk)

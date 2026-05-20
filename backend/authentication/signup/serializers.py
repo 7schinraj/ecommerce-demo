@@ -23,10 +23,11 @@ class SignupSerializer(serializers.ModelSerializer):
         min_length=6,
         help_text="Enter a secure password (minimum 6 characters)"
     )
-    role = serializers.CharField(
-        required=False,
+    role = serializers.ChoiceField(
+        choices=[('customer', 'Customer'), ('admin', 'Admin')],
         default='customer',
-        help_text="Enter user role: customer or admin (case-insensitive)"
+        required=False,
+        help_text="Define the account role (e.g. customer, admin)"
     )
 
     class Meta:
@@ -47,16 +48,6 @@ class SignupSerializer(serializers.ModelSerializer):
         if email:
             attrs['email'] = email.strip().lower()
 
-        # 2. Normalize and validate role to lowercase
-        role = attrs.get('role', 'customer')
-        if role:
-            normalized_role = role.strip().lower()
-            if normalized_role not in ['customer', 'admin']:
-                raise serializers.ValidationError({"role": ["Role must be either 'customer' or 'admin'."]})
-            attrs['role'] = normalized_role
-        else:
-            attrs['role'] = 'customer'
-
         username = attrs.get('username')
         
         # Verify account uniqueness using normalized email
@@ -66,10 +57,11 @@ class SignupSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        # Create CustomUser with hashed password and normalized role/email
+        # Create CustomUser with hashed password and custom role if provided (defaults to customer)
+        role = validated_data.get('role', 'customer')
         return CustomUser.objects.create(
             username=validated_data['username'],
             email=validated_data['email'],
-            role=validated_data['role'],
+            role=role,
             password=make_password(validated_data['password'])
         )

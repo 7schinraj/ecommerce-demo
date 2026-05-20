@@ -70,7 +70,7 @@
 
 html, body {
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
@@ -88,7 +88,6 @@ body {
   display: flex;
   flex-direction: column;
   max-width: 100%;
-  overflow-x: hidden;
 }
 
 a {
@@ -1629,6 +1628,14 @@ h1, h2, h3, h4, h5, h6 {
 
 /* --- CUSTOMER PORTAL & DASHBOARD STYLES --- */
 
+.main-viewport-container {
+  flex: 1;
+  padding: var(--spacing-xl) var(--spacing-lg);
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+}
+
 .customer-dashboard-wrapper {
   display: flex;
   flex-direction: column;
@@ -1703,6 +1710,13 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+@media (min-width: 992px) {
+  .customer-sidebar {
+    position: sticky;
+    top: 90px;
+  }
 }
 
 .customer-sidebar-header {
@@ -2009,6 +2023,10 @@ h1, h2, h3, h4, h5, h6 {
   gap: 8px;
 }
 
+.sort-select-dropdown {
+  min-width: 170px;
+}
+
 .sort-bar-divider {
   border-left: 1px solid var(--border-color);
   height: 20px;
@@ -2085,6 +2103,12 @@ h1, h2, h3, h4, h5, h6 {
   gap: 24px;
 }
 
+@media (min-width: 992px) {
+  .customer-grid-deck {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 .customer-list-deck {
   display: flex;
   flex-direction: column;
@@ -2103,11 +2127,11 @@ h1, h2, h3, h4, h5, h6 {
 
 .product-card.grid {
   flex-direction: column;
+  height: 100%;
 }
 
 .product-card.list {
-  min-height: 200px;
-  height: auto;
+  height: 200px;
 }
 
 .product-card-rating-badge {
@@ -2247,6 +2271,7 @@ h1, h2, h3, h4, h5, h6 {
 .product-card.grid .product-card-title {
   font-size: 1rem;
   line-height: 1.4;
+  height: 44px;
 }
 
 .product-card.list .product-card-title {
@@ -2269,6 +2294,10 @@ h1, h2, h3, h4, h5, h6 {
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.product-card.grid .product-card-desc {
+  height: 38px;
 }
 
 .product-card.list .product-card-desc {
@@ -2370,6 +2399,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @media (max-width: 991px) {
+  .main-viewport-container {
+    padding: 16px 20px;
+  }
+
   .customer-core-grid {
     grid-template-columns: 1fr !important;
     gap: 20px !important;
@@ -2381,13 +2414,13 @@ h1, h2, h3, h4, h5, h6 {
     justify-content: center;
     gap: 8px;
     width: 100%;
-    padding: 12px;
+    padding: 10px;
     background: linear-gradient(135deg, var(--primary-color) 0%, #ff8533 100%);
     color: #fff;
     border: none;
     border-radius: var(--border-radius);
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(255, 107, 0, 0.15);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -2411,39 +2444,65 @@ h1, h2, h3, h4, h5, h6 {
   }
   
   .customer-banner {
-    padding: 16px !important;
+    padding: 12px 16px !important;
   }
   
   .customer-banner-title {
-    font-size: 1.15rem !important;
+    font-size: 1.05rem !important;
   }
   
   .customer-banner-subtitle {
-    font-size: 0.775rem !important;
+    font-size: 0.75rem !important;
   }
 }
 
 @media (max-width: 576px) {
-  .customer-banner {
-    flex-direction: column !important;
-    text-align: center !important;
-    gap: 12px !important;
+  .main-viewport-container {
+    padding: 10px 20px;
   }
-  
-  .customer-banner svg {
+
+  .customer-banner {
     display: none !important;
   }
 
+  .mobile-hidden-text {
+    display: none !important;
+  }
+
+  .sort-select-dropdown {
+    min-width: 110px !important;
+  }
+
   .sort-bar-container {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    padding: 12px 16px !important;
-    gap: 12px !important;
+    flex-direction: row !important; /* Force inline display to save major height */
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 8px 12px !important;
+    gap: 8px !important;
+  }
+
+  .sort-bar-left {
+    font-size: 0.75rem !important;
   }
 
   .sort-bar-right {
-    justify-content: space-between !important;
-    width: 100% !important;
+    justify-content: flex-end !important;
+    width: auto !important;
+    gap: 8px !important;
+  }
+
+  .sort-bar-select-row {
+    font-size: 0.7rem !important;
+  }
+
+  .sort-bar-select-row select {
+    padding: 4px 8px !important;
+    font-size: 0.75rem !important;
+    height: 32px !important;
+  }
+
+  .viewmode-buttons-group {
+    display: none !important; /* Hide mode buttons to make space */
   }
 
   .product-card {

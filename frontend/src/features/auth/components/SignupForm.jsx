@@ -11,7 +11,6 @@ const SignupForm = () => {
     username: '',
     email: '',
     password: '',
-    role: 'customer', // Default role
   });
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
@@ -28,11 +27,6 @@ const SignupForm = () => {
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
-    setServerError('');
-  };
-
-  const handleRoleChange = (role) => {
-    setFormData((prev) => ({ ...prev, role }));
     setServerError('');
   };
 
@@ -71,7 +65,6 @@ const SignupForm = () => {
         username: formData.username,
         email: formData.email,
         password: formData.password,
-        role: formData.role,
       });
 
       // Backend returns tokens & user details upon successful signup
@@ -149,28 +142,7 @@ const SignupForm = () => {
           disabled={isLoading}
         />
 
-        {/* Premium custom selector for Roles */}
-        <div className="input-group">
-          <span className="input-label">Select Account Role</span>
-          <div className="auth-role-selector">
-            <button
-              type="button"
-              onClick={() => handleRoleChange('customer')}
-              disabled={isLoading}
-              className={`auth-role-btn ${formData.role === 'customer' ? 'active' : ''}`}
-            >
-              Customer (Buyer)
-            </button>
-            <button
-              type="button"
-              onClick={() => handleRoleChange('admin')}
-              disabled={isLoading}
-              className={`auth-role-btn ${formData.role === 'admin' ? 'active' : ''}`}
-            >
-              Admin (Seller)
-            </button>
-          </div>
-        </div>
+
 
         <Button
           type="submit"

@@ -7,12 +7,11 @@ export const authApi = {
     return response.data.data;
   },
 
-  signup: async ({ username, email, password, role = 'customer' }) => {
+  signup: async ({ username, email, password }) => {
     const response = await api.post(API_ROUTES.auth.signup, {
       username,
       email,
       password,
-      role,
     });
     return response.data.data;
   },

@@ -1,40 +1,88 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
+import { useAuthStore } from '../../store/authStore';
 import { adminApi } from '../Admin/AdminApi';
 import {
   Search, Star, SlidersHorizontal, ChevronDown, ChevronUp,
   RotateCcw, Grid, List, Package, ShoppingBag,
-  ChevronLeft, ChevronRight, Check
+  ChevronLeft, ChevronRight, Check, Sparkles
 } from 'lucide-react';
 import { Button, Alert, Select } from '../../components/ui';
 
+// Safe Product Image component that handles broken image URLs dynamically
+const SafeProductImage = ({ src, alt }) => {
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError || !src) {
+    return (
+      <div style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #FFF5EE 0%, #FFE4E1 100%)',
+        color: '#FF6B00',
+        gap: '8px',
+        padding: '20px',
+        boxSizing: 'border-box'
+      }}>
+        <Sparkles size={32} strokeWidth={1.5} style={{ opacity: 0.8 }} />
+        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>No Image Available</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform var(--transition-normal)' }}
+      className="product-card-img"
+      onError={() => setHasError(true)}
+    />
+  );
+};
+
 // Premium Interactive Star Rating widget supporting user submissions and running averages
-const InteractiveStars = ({ product, onRatingSaved }) => {
+const InteractiveStars = ({ product, onRatingSaved, onAuthRequired }) => {
   const [hoveredRating, setHoveredRating] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const user = useAuthStore((state) => state.user);
 
   // Round rating to nearest integer
   const currentRatingScore = Math.round(parseFloat(product.rating || 5.0));
 
   const handleStarClick = async (e, starsSelected) => {
     e.stopPropagation();
+
+    // Check if user is authenticated before submitting a rating/review
+    if (!user) {
+      if (onAuthRequired) {
+        onAuthRequired();
+      }
+      return;
+    }
+
     if (isSaving) return;
-    
+
     setIsSaving(true);
     try {
       // Direct rating assignment for instant, responsive visual feedback!
       const newRatingScore = starsSelected;
-      
+
       // Submit patch request to backend (AllowAny endpoint allows direct PATCH requests!)
       await adminApi.patchProduct(product.id, {
         rating: parseFloat(newRatingScore)
       });
-      
+
       if (onRatingSaved) {
         onRatingSaved(product.id, newRatingScore);
       }
-      
+
       // Show tooltipped success feedback
       setShowTooltip(true);
       setTimeout(() => setShowTooltip(false), 2200);
@@ -47,7 +95,7 @@ const InteractiveStars = ({ product, onRatingSaved }) => {
 
   return (
     <div className="customer-stars-wrapper">
-      <div 
+      <div
         className="customer-stars-row"
         onMouseLeave={() => setHoveredRating(0)}
       >
@@ -61,7 +109,7 @@ const InteractiveStars = ({ product, onRatingSaved }) => {
               fill={active ? '#ff6b00' : 'none'}
               color={active ? '#ff6b00' : '#9ca3af'}
               className={`customer-star-icon ${active ? 'active' : ''}`}
-              style={{ 
+              style={{
                 transform: hoveredRating && starVal <= hoveredRating ? 'scale(1.2)' : 'scale(1)'
               }}
               onMouseEnter={() => setHoveredRating(starVal)}
@@ -70,7 +118,7 @@ const InteractiveStars = ({ product, onRatingSaved }) => {
           );
         })}
       </div>
-      
+
       <span className="customer-star-score">
         ({currentRatingScore})
       </span>
@@ -86,6 +134,9 @@ const InteractiveStars = ({ product, onRatingSaved }) => {
 
 const CustomerDashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const user = useAuthStore((state) => state.user);
   const [products, setProducts] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -313,6 +364,10 @@ const CustomerDashboard = () => {
 
   // Handle mock purchase
   const handleBuyProduct = (productName) => {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
     setSuccessMsg(`Congratulations! Your purchase of "${productName}" was placed successfully.`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(() => setSuccessMsg(''), 4000);
@@ -422,39 +477,12 @@ const CustomerDashboard = () => {
 
   // Render Dynamic Product Image or sleek package gradient placeholder
   const renderProductImage = (product) => {
-    if (product.image) {
-      return (
-        <img
-          src={product.image}
-          alt={product.name}
-          style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform var(--transition-normal)' }}
-          className="product-card-img"
-        />
-      );
-    }
-    return (
-      <div style={{
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
-        color: '#9ca3af',
-        gap: '8px',
-        padding: '20px',
-        boxSizing: 'border-box'
-      }}>
-        <Package size={40} strokeWidth={1.5} />
-        <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>No Image Available</span>
-      </div>
-    );
+    return <SafeProductImage src={product.image} alt={product.name} />;
   };
 
   return (
     <div className="customer-dashboard-wrapper">
-      
+
       {/* Alert Notices */}
       {successMsg && (
         <Alert
@@ -485,8 +513,8 @@ const CustomerDashboard = () => {
       </div>
 
       {/* Mobile Filter Toggle Button */}
-      <button 
-        className="mobile-filter-btn" 
+      <button
+        className="mobile-filter-btn"
         onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
       >
         <SlidersHorizontal size={16} />
@@ -674,7 +702,7 @@ const CustomerDashboard = () => {
 
             {openSections.price && (
               <div className="customer-filter-content">
-                
+
                 {/* Live Range display */}
                 <div className="customer-price-text-row">
                   <span>Min: <strong>${sliderMin}</strong></span>
@@ -684,8 +712,8 @@ const CustomerDashboard = () => {
                 {/* Double range slider widget */}
                 <div className="price-slider-container">
                   <div className="price-slider-track-bg" />
-                  <div 
-                    className="price-slider-track-active" 
+                  <div
+                    className="price-slider-track-active"
                     style={{
                       left: `${(sliderMin / maxLimit) * 100}%`,
                       width: `${((sliderMax - sliderMin) / maxLimit) * 100}%`
@@ -729,7 +757,7 @@ const CustomerDashboard = () => {
                     className="customer-price-input"
                   />
                 </div>
-                
+
                 <Button
                   variant="outline"
                   onClick={() => updateFilters({ min_price: minPriceInput, max_price: maxPriceInput })}
@@ -784,20 +812,20 @@ const CustomerDashboard = () => {
 
         </aside>
 
-        {/* ================= RIGHT MAIN CATALOG (75% WIDTH) ================= */}
         <section className="customer-catalog-section">
 
-          {/* Sort bar, count state, and layout toggle */}
           <div className="sort-bar-container">
             <span className="pagination-info">
-              We found <strong>{totalCount}</strong> item{totalCount === 1 ? '' : 's'} for you
+              <span className="mobile-hidden-text">We found </span>
+              <strong>{totalCount}</strong> item{totalCount === 1 ? '' : 's'}
+              <span className="mobile-hidden-text"> for you</span>
             </span>
 
             <div className="sort-bar-right">
 
               {/* Sort selector dropdown */}
               <div className="sort-bar-select-row">
-                <span className="customer-filter-label">
+                <span className="customer-filter-label mobile-hidden-text">
                   Sort By:
                 </span>
                 <Select
@@ -809,7 +837,7 @@ const CustomerDashboard = () => {
                     { value: 'price_desc', label: 'Price: High to Low' },
                     { value: 'rating', label: 'Highest Rated' }
                   ]}
-                  style={{ minWidth: '170px' }}
+                  className="sort-select-dropdown"
                 />
               </div>
 
@@ -881,7 +909,7 @@ const CustomerDashboard = () => {
                           <span className="product-card-category-badge">
                             {product.category_name || 'Gear'}
                           </span>
-                          <span 
+                          <span
                             className={`product-card-stock-status ${product.stock > 0 ? (product.stock <= 5 ? 'urgency-stock' : 'in-stock') : 'out-of-stock'}`}
                             title={product.stock > 0 ? `${product.stock} items available` : 'Out of Stock'}
                           >
@@ -894,7 +922,11 @@ const CustomerDashboard = () => {
                         </h3>
 
                         {/* Interactive Review Star System */}
-                        <InteractiveStars product={product} onRatingSaved={handleRatingSaved} />
+                        <InteractiveStars
+                          product={product}
+                          onRatingSaved={handleRatingSaved}
+                          onAuthRequired={() => setShowAuthModal(true)}
+                        />
 
                         <p className="product-card-desc">
                           {product.description || 'No description available.'}
@@ -939,7 +971,7 @@ const CustomerDashboard = () => {
                               <span className="product-card-category-badge">
                                 {product.category_name || 'Gear'}
                               </span>
-                              <span 
+                              <span
                                 className={`product-card-stock-status ${product.stock > 0 ? (product.stock <= 5 ? 'urgency-stock' : 'in-stock') : 'out-of-stock'}`}
                                 title={product.stock > 0 ? `${product.stock} items available` : 'Out of Stock'}
                               >
@@ -957,7 +989,11 @@ const CustomerDashboard = () => {
 
                           {/* Interactive Review Star System */}
                           <div style={{ marginTop: '4px' }}>
-                            <InteractiveStars product={product} onRatingSaved={handleRatingSaved} />
+                            <InteractiveStars
+                              product={product}
+                              onRatingSaved={handleRatingSaved}
+                              onAuthRequired={() => setShowAuthModal(true)}
+                            />
                           </div>
 
                           <p className="product-card-desc">
@@ -1032,6 +1068,114 @@ const CustomerDashboard = () => {
         </section>
 
       </div>
+
+      {/* Premium Authentication Required Modal */}
+      {showAuthModal && createPortal(
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(15, 23, 42, 0.65)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 99999,
+          animation: 'fadeIn 0.2s ease-out'
+        }}
+          onClick={() => setShowAuthModal(false)}
+        >
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '16px',
+            padding: '32px',
+            width: '100%',
+            maxWidth: '440px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            border: '1px solid rgba(226, 232, 240, 0.8)',
+            textAlign: 'center',
+            position: 'relative',
+            margin: '20px'
+          }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{
+              width: '60px',
+              height: '60px',
+              borderRadius: '50%',
+              backgroundColor: 'var(--primary-light)',
+              color: 'var(--primary-color)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 20px auto',
+            }}>
+              <Star size={30} fill="currentColor" />
+            </div>
+
+            <h3 style={{
+              fontSize: '1.25rem',
+              fontWeight: 700,
+              color: 'var(--text-primary)',
+              marginBottom: '10px'
+            }}>
+              Authentication Required
+            </h3>
+
+            <p style={{
+              fontSize: '0.9rem',
+              color: 'var(--text-secondary)',
+              lineHeight: '1.5',
+              marginBottom: '24px'
+            }}>
+              Please sign in or create an account to rate and review products. Your feedback helps other shoppers find the best gear!
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setShowAuthModal(false);
+                  navigate('/login');
+                }}
+                style={{ width: '100%', padding: '12px', borderRadius: '8px' }}
+              >
+                Sign In
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowAuthModal(false);
+                  navigate('/signup');
+                }}
+                style={{ width: '100%', padding: '12px', borderRadius: '8px' }}
+              >
+                Create Account
+              </Button>
+
+              <button
+                onClick={() => setShowAuthModal(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  fontSize: '0.85rem',
+                  fontWeight: 500,
+                  marginTop: '12px',
+                  cursor: 'pointer',
+                  textDecoration: 'underline'
+                }}
+              >
+                Maybe Later
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };

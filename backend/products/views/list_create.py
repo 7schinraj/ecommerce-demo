@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from authentication.permissions import IsAdminOrReadOnly
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.exceptions import ValidationError
 from drf_yasg.utils import swagger_auto_schema
@@ -31,7 +32,7 @@ class ProductPagination(PageNumberPagination):
 
 
 class ProductListCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrReadOnly]
 
     @swagger_auto_schema(**PRODUCT_LIST_SCHEMA)
     def get(self, request):

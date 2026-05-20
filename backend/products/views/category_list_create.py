@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from authentication.permissions import IsAdminOrReadOnly
 from rest_framework.exceptions import ValidationError
 from drf_yasg.utils import swagger_auto_schema
 from products.serializers import CategorySerializer
@@ -10,7 +11,7 @@ from products.schemas import CATEGORY_LIST_SCHEMA, CATEGORY_CREATE_SCHEMA
 
 
 class CategoryListCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminOrReadOnly]
 
     @swagger_auto_schema(**CATEGORY_LIST_SCHEMA)
     def get(self, request):

@@ -33,14 +33,10 @@ const AppRoutes = () => {
         <Route path="/signup" element={<SignupForm />} />
       </Route>
 
-      {/* Secure private paths mapped within Navigated Header frame */}
+      {/* Publicly accessible layout with dashboard dispatcher */}
       <Route
         path="/"
-        element={
-          <PrivateRoute>
-            <MainLayout />
-          </PrivateRoute>
-        }
+        element={<MainLayout />}
       >
         <Route index element={<RootDashboard />} />
       </Route>

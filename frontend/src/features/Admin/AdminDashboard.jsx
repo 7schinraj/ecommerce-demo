@@ -5,9 +5,48 @@ import AddProductForm from './AddProductForm';
 import {
   Plus, Search, Filter, Edit, Trash, Package, Star,
   Grid, List, ChevronLeft, ChevronRight, Laptop,
-  ShieldAlert, X
+  ShieldAlert, X, Sparkles
 } from 'lucide-react';
 import { Button, Alert, Select } from '../../components/ui';
+
+// Safe Image component that handles broken image URLs dynamically
+const SafeAdminImage = ({ src, alt, className }) => {
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError || !src) {
+    const isThumbnail = className && className.includes('admin-td-img');
+    return (
+      <div
+        className={className}
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(135deg, #FFF5EE 0%, #FFE4E1 100%)',
+          color: '#FF6B00',
+          gap: isThumbnail ? '0' : '4px',
+          boxSizing: 'border-box',
+          flexShrink: 0
+        }}
+      >
+        <Sparkles size={isThumbnail ? 14 : 24} strokeWidth={1.5} style={{ opacity: 0.8 }} />
+        {!isThumbnail && (
+          <span style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--text-secondary)' }}>No Image</span>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      onError={() => setHasError(true)}
+    />
+  );
+};
 
 const AdminDashboard = () => {
   // Inventory Lists & Counts
@@ -44,7 +83,7 @@ const AdminDashboard = () => {
   const [viewMode, setViewMode] = useState('card'); // table vs card
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [productToEdit, setProductToEdit] = useState(null);
-  
+
   // Mobile Filters toggle drawer state
   const [adminFiltersOpen, setAdminFiltersOpen] = useState(false);
 
@@ -199,7 +238,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="animate-fade-in">
-      
+
       {/* Dynamic Visual Notification */}
       {notification && (
         <Alert
@@ -246,7 +285,7 @@ const AdminDashboard = () => {
 
       {/* --- PREMIUM GLASSMORPHIC SIDE DRAWER (RENDERED VIA PORTAL) --- */}
       {createPortal(
-        <div 
+        <div
           className={`drawer-backdrop ${isFormOpen ? 'open' : ''}`}
           onClick={() => {
             setIsFormOpen(false);
@@ -273,7 +312,7 @@ const AdminDashboard = () => {
                 <X size={20} />
               </button>
             </div>
-            
+
             <div className="drawer-body">
               <AddProductForm
                 productToEdit={productToEdit}
@@ -328,10 +367,10 @@ const AdminDashboard = () => {
 
       {/* --- DASHBOARD LIST CONTROLS BAR --- */}
       <div className="admin-controls-wrapper">
-        
+
         {/* Left side: Search Input, View Mode Toggle, and Mobile Filter Toggle Button */}
         <div className="admin-controls-left">
-          
+
           <div className="search-bar-responsive">
             <span className="admin-control-section-label">
               Search Products
@@ -378,7 +417,7 @@ const AdminDashboard = () => {
             <span className="admin-filter-label admin-control-section-label">
               Filter
             </span>
-            <button 
+            <button
               type="button"
               className={`admin-mobile-filter-toggle ${adminFiltersOpen ? 'active' : ''}`}
               onClick={() => setAdminFiltersOpen(!adminFiltersOpen)}
@@ -455,226 +494,226 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-          {/* Loading Overlay Spinner */}
-          {isLoading ? (
-            <div className="admin-loading-wrapper">
-              <div className="admin-loading-spinner" />
-            </div>
-          ) : products.length === 0 ? (
-            <div className="admin-empty-state">
-              <Package size={48} className="admin-empty-icon" />
-              <h3>No Products Found</h3>
-              <p>Try adjusting your filters, query terms, or add a new product.</p>
-            </div>
-          ) : viewMode === 'table' ? (
+      {/* Loading Overlay Spinner */}
+      {isLoading ? (
+        <div className="admin-loading-wrapper">
+          <div className="admin-loading-spinner" />
+        </div>
+      ) : products.length === 0 ? (
+        <div className="admin-empty-state">
+          <Package size={48} className="admin-empty-icon" />
+          <h3>No Products Found</h3>
+          <p>Try adjusting your filters, query terms, or add a new product.</p>
+        </div>
+      ) : viewMode === 'table' ? (
 
-            // --- 1. TABLE INVENTORY VIEW ---
-            <div className="admin-table-container animate-fade-in">
-              <table className="admin-table">
-                <thead>
-                  <tr className="admin-table-header-row">
-                    <th style={{ padding: '16px' }}>Product</th>
-                    <th style={{ padding: '16px' }}>Category</th>
-                    <th style={{ padding: '16px' }}>SKU</th>
-                    <th style={{ padding: '16px' }}>Price</th>
-                    <th style={{ padding: '16px' }}>Stock</th>
-                    <th style={{ padding: '16px' }}>Availability</th>
-                    <th style={{ padding: '16px' }}>Rating</th>
-                    <th style={{ padding: '16px', textAlign: 'right' }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {products.map((p) => (
-                    <tr
-                      key={p.id}
-                      className="table-row-hover admin-table-row"
-                    >
-                      <td className="admin-td-product">
-                        <img
-                          src={p.image}
-                          alt={p.name}
-                          className="admin-td-img"
-                        />
-                        <span className="admin-td-name">{p.name}</span>
-                      </td>
-                      <td className="admin-td-standard">
-                        <span className="admin-badge-primary">
-                          {p.category_name || 'Uncategorized'}
-                        </span>
-                      </td>
-                      <td className="admin-td-sku">
-                        {p.sku}
-                      </td>
-                      <td className="admin-td-price">
-                        ${parseFloat(p.price).toFixed(2)}
-                      </td>
-                      <td className="admin-td-stock">
-                        {p.stock} items
-                      </td>
-                      <td className="admin-td-standard">
-                        <span className={`admin-badge-${p.stock > 0 ? 'success' : 'danger'}`}>
-                          {p.stock > 0 ? 'In Stock' : 'Sold Out'}
-                        </span>
-                      </td>
-                      <td className="admin-td-standard">
-                        {renderAdminStars(p.rating)}
-                      </td>
-                      <td className="admin-td-actions">
-                        <div className="admin-actions-wrapper">
-                          <Button
-                            variant="outline"
-                            onClick={() => handleEditClick(p)}
-                            className="admin-action-btn"
-                            title="Edit product"
-                          >
-                            <Edit size={14} />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() => handleDeleteTrigger(p.id, p.name)}
-                            className="admin-action-btn delete"
-                            title="Delete product"
-                          >
-                            <Trash size={14} />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-
-            // --- 2. CARD DENSITY GRID VIEW ---
-            <div className="admin-grid-view animate-fade-in">
+        // --- 1. TABLE INVENTORY VIEW ---
+        <div className="admin-table-container animate-fade-in">
+          <table className="admin-table">
+            <thead>
+              <tr className="admin-table-header-row">
+                <th style={{ padding: '16px' }}>Product</th>
+                <th style={{ padding: '16px' }}>Category</th>
+                <th style={{ padding: '16px' }}>SKU</th>
+                <th style={{ padding: '16px' }}>Price</th>
+                <th style={{ padding: '16px' }}>Stock</th>
+                <th style={{ padding: '16px' }}>Availability</th>
+                <th style={{ padding: '16px' }}>Rating</th>
+                <th style={{ padding: '16px', textAlign: 'right' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
               {products.map((p) => (
-                <div
+                <tr
                   key={p.id}
-                  className="admin-product-card"
+                  className="table-row-hover admin-table-row"
                 >
-                  <div className="admin-card-img-wrapper">
-                    <img
+                  <td className="admin-td-product">
+                    <SafeAdminImage
                       src={p.image}
                       alt={p.name}
-                      className="admin-card-img"
+                      className="admin-td-img"
                     />
-                    <span className={`admin-card-badge ${p.stock > 0 ? 'success' : 'danger'}`}>
-                      {p.stock > 0 ? 'Available' : 'Out of Stock'}
+                    <span className="admin-td-name">{p.name}</span>
+                  </td>
+                  <td className="admin-td-standard">
+                    <span className="admin-badge-primary">
+                      {p.category_name || 'Uncategorized'}
                     </span>
-                  </div>
-
-                  <div className="admin-card-body">
-                    <div className="admin-card-meta">
-                      <span className="admin-card-sku">
-                        {p.sku}
-                      </span>
-                      <span className="admin-card-category">
-                        {p.category_name || 'Uncategorized'}
-                      </span>
-                    </div>
-                    <h3 className="admin-card-title">
-                      {p.name}
-                    </h3>
-                    <div className="admin-card-stars">
-                      {renderAdminStars(p.rating)}
-                    </div>
-                    <p className="admin-card-desc">
-                      {p.description || 'No description registered.'}
-                    </p>
-
-                    <div className="admin-card-pricing-row">
-                      <div>
-                        <span className="admin-card-pricing-label">PRICE</span>
-                        <span className="admin-card-price-value">
-                          ${parseFloat(p.price).toFixed(2)}
-                        </span>
-                      </div>
-                      <div className="admin-card-stock-col">
-                        <span className="admin-card-pricing-label">STOCK</span>
-                        <span className="admin-card-stock-value">
-                          {p.stock} items
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="admin-card-actions">
+                  </td>
+                  <td className="admin-td-sku">
+                    {p.sku}
+                  </td>
+                  <td className="admin-td-price">
+                    ${parseFloat(p.price).toFixed(2)}
+                  </td>
+                  <td className="admin-td-stock">
+                    {p.stock} items
+                  </td>
+                  <td className="admin-td-standard">
+                    <span className={`admin-badge-${p.stock > 0 ? 'success' : 'danger'}`}>
+                      {p.stock > 0 ? 'In Stock' : 'Sold Out'}
+                    </span>
+                  </td>
+                  <td className="admin-td-standard">
+                    {renderAdminStars(p.rating)}
+                  </td>
+                  <td className="admin-td-actions">
+                    <div className="admin-actions-wrapper">
                       <Button
                         variant="outline"
                         onClick={() => handleEditClick(p)}
-                        className="admin-card-btn"
+                        className="admin-action-btn"
+                        title="Edit product"
                       >
                         <Edit size={14} />
-                        <span>Edit</span>
                       </Button>
                       <Button
                         variant="outline"
                         onClick={() => handleDeleteTrigger(p.id, p.name)}
-                        className="admin-card-btn delete"
+                        className="admin-action-btn delete"
+                        title="Delete product"
                       >
                         <Trash size={14} />
-                        <span>Delete</span>
                       </Button>
                     </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
 
+        // --- 2. CARD DENSITY GRID VIEW ---
+        <div className="admin-grid-view animate-fade-in">
+          {products.map((p) => (
+            <div
+              key={p.id}
+              className="admin-product-card"
+            >
+              <div className="admin-card-img-wrapper">
+                <SafeAdminImage
+                  src={p.image}
+                  alt={p.name}
+                  className="admin-card-img"
+                />
+                <span className={`admin-card-badge ${p.stock > 0 ? 'success' : 'danger'}`}>
+                  {p.stock > 0 ? 'Available' : 'Out of Stock'}
+                </span>
+              </div>
+
+              <div className="admin-card-body">
+                <div className="admin-card-meta">
+                  <span className="admin-card-sku">
+                    {p.sku}
+                  </span>
+                  <span className="admin-card-category">
+                    {p.category_name || 'Uncategorized'}
+                  </span>
+                </div>
+                <h3 className="admin-card-title">
+                  {p.name}
+                </h3>
+                <div className="admin-card-stars">
+                  {renderAdminStars(p.rating)}
+                </div>
+                <p className="admin-card-desc">
+                  {p.description || 'No description registered.'}
+                </p>
+
+                <div className="admin-card-pricing-row">
+                  <div>
+                    <span className="admin-card-pricing-label">PRICE</span>
+                    <span className="admin-card-price-value">
+                      ${parseFloat(p.price).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="admin-card-stock-col">
+                    <span className="admin-card-pricing-label">STOCK</span>
+                    <span className="admin-card-stock-value">
+                      {p.stock} items
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
 
-          {/* --- PAGINATION CONTROLS FOOTER --- */}
-          {!isLoading && totalPages > 1 && (
-            <div className="admin-pagination-wrapper">
-              <span className="admin-pagination-info">
-                Showing{' '}
-                <strong style={{ color: 'var(--text-primary)' }}>
-                  {(currentPage - 1) * pageSize + 1}
-                </strong>{' '}
-                to{' '}
-                <strong style={{ color: 'var(--text-primary)' }}>
-                  {Math.min(currentPage * pageSize, totalCount)}
-                </strong>{' '}
-                of <strong style={{ color: 'var(--text-primary)' }}>{totalCount}</strong> products
-              </span>
-
-              <div className="admin-pagination-buttons">
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="admin-page-nav-btn"
-                >
-                  <ChevronLeft size={16} />
-                </button>
-
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNo) => (
-                  <button
-                    key={pageNo}
-                    onClick={() => handlePageChange(pageNo)}
-                    className={`admin-page-btn ${currentPage === pageNo ? 'active' : ''}`}
+                <div className="admin-card-actions">
+                  <Button
+                    variant="outline"
+                    onClick={() => handleEditClick(p)}
+                    className="admin-card-btn"
                   >
-                    {pageNo}
-                  </button>
-                ))}
+                    <Edit size={14} />
+                    <span>Edit</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleDeleteTrigger(p.id, p.name)}
+                    className="admin-card-btn delete"
+                  >
+                    <Trash size={14} />
+                    <span>Delete</span>
+                  </Button>
+                </div>
 
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="admin-page-nav-btn"
-                >
-                  <ChevronRight size={16} />
-                </button>
               </div>
             </div>
-          )}
-      
+          ))}
+        </div>
+      )}
+
+      {/* --- PAGINATION CONTROLS FOOTER --- */}
+      {!isLoading && totalPages > 1 && (
+        <div className="admin-pagination-wrapper">
+          <span className="admin-pagination-info">
+            Showing{' '}
+            <strong style={{ color: 'var(--text-primary)' }}>
+              {(currentPage - 1) * pageSize + 1}
+            </strong>{' '}
+            to{' '}
+            <strong style={{ color: 'var(--text-primary)' }}>
+              {Math.min(currentPage * pageSize, totalCount)}
+            </strong>{' '}
+            of <strong style={{ color: 'var(--text-primary)' }}>{totalCount}</strong> products
+          </span>
+
+          <div className="admin-pagination-buttons">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="admin-page-nav-btn"
+            >
+              <ChevronLeft size={16} />
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNo) => (
+              <button
+                key={pageNo}
+                onClick={() => handlePageChange(pageNo)}
+                className={`admin-page-btn ${currentPage === pageNo ? 'active' : ''}`}
+              >
+                {pageNo}
+              </button>
+            ))}
+
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="admin-page-nav-btn"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* --- PREMIUM GLASSMORPHIC DELETE CONFIRMATION MODAL (PORTAL) --- */}
       {deleteConfirm.isOpen && createPortal(
-        <div 
+        <div
           className="admin-modal-backdrop animate-fade-in"
           onClick={() => setDeleteConfirm(prev => ({ ...prev, isOpen: false }))}
         >
-          <div 
+          <div
             className="admin-modal-panel animate-fade-in"
             onClick={(e) => e.stopPropagation()}
           >
@@ -692,16 +731,16 @@ const AdminDashboard = () => {
             </div>
 
             <div className="admin-modal-actions">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setDeleteConfirm(prev => ({ ...prev, isOpen: false }))}
                 disabled={deleteConfirm.isDeleting}
                 className="admin-modal-btn"
               >
                 Cancel
               </Button>
-              <Button 
-                variant="primary" 
+              <Button
+                variant="primary"
                 onClick={executeDelete}
                 isLoading={deleteConfirm.isDeleting}
                 className="admin-modal-btn delete"
@@ -713,7 +752,7 @@ const AdminDashboard = () => {
         </div>,
         document.body
       )}
-      
+
     </div>
   );
 };
