@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
-const AUTH_USER_KEY = 'superlaps_user';
-const AUTH_REFRESH_KEY = 'superlaps_refresh';
+const AUTH_USER_KEY = 'user';
+const AUTH_REFRESH_KEY = 'refresh';
 
 export const useAuthStore = create((set, get) => ({
   user: (() => {
@@ -12,7 +12,7 @@ export const useAuthStore = create((set, get) => ({
       return null;
     }
   })(),
-  accessToken: null, // In-memory storage only for security
+  accessToken: null,
   refreshToken: localStorage.getItem(AUTH_REFRESH_KEY) || null,
   isAuthenticated: () => !!get().user && (!!get().accessToken || !!get().refreshToken),
 
